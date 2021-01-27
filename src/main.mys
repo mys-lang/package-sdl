@@ -9,6 +9,18 @@ from . import Surface
 from . import Texture
 from . import create_rgb_surface
 from . import create_texture
+from . import img_init
+from . import img_load
+from . import create_texture_from_surface
+from . import render_clear
+from . import render_present
+from . import query_texture
+from . import render_copy
+from . import Rect
+from . import Color
+from . import update_texture
+from . import fill_rect
+from . import map_rgb
 
 TITLE: string = "tVintris"
 BLOCK_SIZE: i64 = 20
@@ -16,24 +28,52 @@ FIELD_HEIGHT: i64 = 20
 FIELD_WIDTH: i64 = 10
 WIN_WIDTH: i64 = BLOCK_SIZE * FIELD_WIDTH * 3
 WIN_HEIGHT: i64 = BLOCK_SIZE * FIELD_HEIGHT
+MYS_LOGO: string = "images/mys-logo-30-25.png"
+
+FOREGROUND_COLOR: Color = Color(0, 170, 170, 0)
 
 class SDLContext:
     width: i64
     height: i64
     screen: Surface
     texture: Texture
+    mys_logo: Surface
+    tmys_logo: Texture
+    window: Window
+    renderer: Renderer
 
     def __init__(self, width: i64, height: i64):
         self.width = width
         self.height = height
 
+def sdl_fill_rect(screen: Surface, rect: Rect, color: Color):
+    value = map_rgb(screen, color.r, color.g, color.b)
+    fill_rect(screen, rect, value)
+
+def draw_begin(sdl: SDLContext):
+    render_clear(sdl.renderer)
+
+    rect = Rect(0, 0, sdl.width, sdl.height)
+    color = Color(0, 0, 0, 0)
+    sdl_fill_rect(sdl.screen, rect, color)
+
+    rect = Rect(BLOCK_SIZE * FIELD_WIDTH + 2, 0, 2, sdl.height)
+    sdl_fill_rect(sdl.screen, rect, FOREGROUND_COLOR)
+
+    rect = Rect(WIN_WIDTH - BLOCK_SIZE * FIELD_WIDTH - 4, 0, 2, sdl.height)
+    sdl_fill_rect(sdl.screen, rect, FOREGROUND_COLOR)
+
+def draw_middle(sdl: SDLContext):
+    update_texture(sdl.texture, sdl.screen)
+    render_copy(sdl.renderer, sdl.texture, None)
+
 def set_sdl_context(width: i64, height: i64, title: string):
+    sdl = SDLContext(width, height)
     sdl_init()
     ttf_init()
     bpp = 32
-    window, renderer = create_window_and_renderer(width, height, 0)
-    set_window_title(window, title)
-    sdl = SDLContext(width, height)
+    sdl.window, sdl.renderer = create_window_and_renderer(width, height, 0)
+    set_window_title(sdl.window, title)
     sdl.screen = create_rgb_surface(0,
                                     width,
                                     height,
@@ -42,11 +82,21 @@ def set_sdl_context(width: i64, height: i64, title: string):
                                     0x0000ff00,
                                     0x000000ff,
                                     0xff000000)
-    sdl.texture = create_texture(renderer, width, height)
+    sdl.texture = create_texture(sdl.renderer, width, height)
 
-    # ToDo
+    img_init()
+    sdl.mys_logo = img_load(MYS_LOGO)
+    sdl.tmys_logo = create_texture_from_surface(sdl.renderer, sdl.mys_logo)
 
-    sleep(5.0)
+    draw_begin(sdl)
+    draw_middle(sdl)
+    tw, th = query_texture(sdl.tmys_logo)
+    render_copy(sdl.renderer,
+                sdl.tmys_logo,
+                Rect((WIN_WIDTH - tw) / 2, 20, tw, th))
+    render_present(sdl.renderer)
+
+    sleep(30.0)
 
 def main():
     print("tVintris -- tribute to venerable Twintris")
