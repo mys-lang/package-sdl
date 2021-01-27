@@ -31,6 +31,17 @@ WIN_HEIGHT: i64 = BLOCK_SIZE * FIELD_HEIGHT
 MYS_LOGO: string = "images/mys-logo-30-25.png"
 
 FOREGROUND_COLOR: Color = Color(0, 170, 170, 0)
+COLORS: [Color] = [
+    Color(0, 0, 0, 0),
+    Color(0, 98, 192, 0),
+    Color(202, 125, 95, 0),
+    Color(0, 193, 191, 0),
+    Color(0, 193, 0, 0),
+    Color(191, 190, 0, 0),
+    Color(209, 0, 191, 0),
+    Color(209, 0, 0, 0),
+    Color(0, 170, 170, 0)
+]
 
 class SDLContext:
     width: i64
@@ -46,11 +57,19 @@ class SDLContext:
         self.width = width
         self.height = height
 
+class Game:
+    tetro_stats: [i64]
+    tetro_total: i64
+
+    def __init__(self):
+        self.tetro_total = 0
+        self.tetro_stats = [0, 0, 0, 0, 0, 0, 0]
+
 def sdl_fill_rect(screen: Surface, rect: Rect, color: Color):
     value = map_rgb(screen, color.r, color.g, color.b)
     fill_rect(screen, rect, value)
 
-def draw_begin(sdl: SDLContext):
+def draw_begin(sdl: SDLContext, game: Game):
     render_clear(sdl.renderer)
 
     rect = Rect(0, 0, sdl.width, sdl.height)
@@ -62,6 +81,30 @@ def draw_begin(sdl: SDLContext):
 
     rect = Rect(WIN_WIDTH - BLOCK_SIZE * FIELD_WIDTH - 4, 0, 2, sdl.height)
     sdl_fill_rect(sdl.screen, rect, FOREGROUND_COLOR)
+
+    # Just some dummy stats. Remove later.
+    game.tetro_total = 100
+    game.tetro_stats[0] = 5
+    game.tetro_stats[1] = 25
+    game.tetro_stats[2] = 5
+    game.tetro_stats[3] = 10
+    game.tetro_stats[4] = 30
+    game.tetro_stats[5] = 10
+    game.tetro_stats[6] = 15
+
+    for i, stat in enumerate(game.tetro_stats):
+        s = 10
+
+        if game.tetro_total > 0:
+            s += 90 * stat / game.tetro_total
+
+        width = BLOCK_SIZE
+        height = s * 4 * width / 100
+        rect = Rect((WIN_WIDTH - 7 * (width + 1)) / 2 + i * (width + 1),
+                    WIN_HEIGHT * 3 / 4 - height,
+                    width,
+                    height)
+        sdl_fill_rect(sdl.screen, rect, COLORS[i + 1])
 
 def draw_middle(sdl: SDLContext):
     update_texture(sdl.texture, sdl.screen)
@@ -87,8 +130,8 @@ def set_sdl_context(width: i64, height: i64, title: string):
     img_init()
     sdl.mys_logo = img_load(MYS_LOGO)
     sdl.tmys_logo = create_texture_from_surface(sdl.renderer, sdl.mys_logo)
-
-    draw_begin(sdl)
+    game = Game()
+    draw_begin(sdl, game)
     draw_middle(sdl)
     tw, th = query_texture(sdl.tmys_logo)
     render_copy(sdl.renderer,
