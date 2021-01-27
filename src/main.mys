@@ -43,8 +43,10 @@ def set_sdl_context(width: i64, height: i64, title: string):
                                     0x000000ff,
                                     0xff000000)
     sdl.texture = create_texture(renderer, width, height)
+
     # ToDo
-    sleep(3.0)
+
+    sleep(5.0)
 
 def main():
     print("tVintris -- tribute to venerable Twintris")

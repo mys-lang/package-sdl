@@ -8,6 +8,11 @@ class Window:
     void *window_p;
     """
 
+    title: bytes
+
+    def __init__(self):
+        pass
+
 class Renderer:
     """mys-embedded-c++
     void *renderer_p;
@@ -59,8 +64,12 @@ def create_window_and_renderer(width: i64,
     return window, renderer
 
 def set_window_title(window: Window, title: string):
-    """mys-embedded-c++
-    SDL_SetWindowTitle((SDL_Window *)window->window_p, "Hello");
+    window.title = title.to_utf8()
+    window.title += 0
+
+    r"""mys-embedded-c++
+    SDL_SetWindowTitle((SDL_Window *)window->window_p,
+                       (const char *)window->title.m_bytes->data());
     """
 
 def create_rgb_surface(flags: u32,

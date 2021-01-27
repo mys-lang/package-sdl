@@ -1,14 +1,20 @@
-Mys Sdl
-=======
+SDL2 wrapper
+============
 
-This package provides...
+An `SDL2`_ wrapper in the `Mys programming language`_.
 
-Examples
-========
+Install SDL2 library:
 
-.. code-block:: python
+.. code-block::
 
-   from mys_sdl import add
+   $ sudo apt install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev
 
-   def main():
-       print('1 + 2 =', add(1, 2))
+Build and run.
+
+.. code-block::
+
+   $ make
+
+.. _Mys programming language: https://github.com/mys-lang/mys
+
+.. _SDL2: https://www.libsdl.org/
