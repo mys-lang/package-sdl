@@ -4,6 +4,21 @@
 #include <SDL2/SDL_image.h>
 """
 
+class Rect:
+    x: i64
+    y: i64
+    w: i64
+    h: i64
+
+class Color:
+    r: u8
+    g: u8
+    b: u8
+    a: u8
+
+class SdlError(Error):
+    message: string
+
 class Window:
     """mys-embedded-c++
     void *window_p;
@@ -14,20 +29,140 @@ class Window:
     def __init__(self):
         pass
 
+    def set_title(self, title: string):
+        self.title = title.to_utf8()
+        self.title += 0
+
+        r"""mys-embedded-c++
+        SDL_SetWindowTitle((SDL_Window *)this->window_p,
+                           (const char *)this->title.m_bytes->data());
+        """
+
 class Renderer:
     """mys-embedded-c++
     void *renderer_p;
     """
+
+    def create_texture(self, width: i64, height: i64) -> Texture:
+        texture = Texture()
+        res: i64 = 0
+
+        """mys-embedded-c++
+        texture->texture_p = SDL_CreateTexture((SDL_Renderer *)this->renderer_p,
+                                               SDL_PIXELFORMAT_ARGB8888,
+                                               SDL_TEXTUREACCESS_STREAMING,
+                                               width,
+                                               height);
+
+        if (texture->texture_p == NULL) {
+            res = 1;
+        }
+        """
+
+        if res != 0:
+            raise SdlError("create_texture()")
+
+        return texture
+
+    # ToDo: missing return value does not work.
+    def create_texture_from_surface(self, surface: Surface) -> Texture:
+        texture = Texture()
+        res: i64 = 0
+
+        """mys-embedded-c++
+        texture->texture_p = SDL_CreateTextureFromSurface(
+            (SDL_Renderer *)this->renderer_p,
+            (SDL_Surface *)surface->surface_p);
+
+        if (texture->texture_p == NULL) {
+            res = 1;
+        }
+        """
+
+        if res != 0:
+            raise SdlError("create_texture_from_surface()")
+
+        return texture
+
+    def clear(self):
+        """mys-embedded-c++
+        SDL_RenderClear((SDL_Renderer *)this->renderer_p);
+        """
+
+    def copy(self, texture: Texture, dst_rect: Rect):
+        """mys-embedded-c++
+        SDL_Rect dstrect;
+        SDL_Rect *dstrect_p = NULL;
+
+        if (dst_rect) {
+            dstrect.x = dst_rect->x;
+            dstrect.y = dst_rect->y;
+            dstrect.w = dst_rect->w;
+            dstrect.h = dst_rect->h;
+            dstrect_p = &dstrect;
+        }
+        SDL_RenderCopy((SDL_Renderer *)this->renderer_p,
+                       (SDL_Texture *)texture->texture_p,
+                       NULL,
+                       dstrect_p);
+        """
+
+    def present(self):
+        """mys-embedded-c++
+        SDL_RenderPresent((SDL_Renderer *)this->renderer_p);
+        """
 
 class Surface:
     """mys-embedded-c++
     void *surface_p;
     """
 
+    def map_rgb(self, r: u8, g: u8, b: u8) -> u32:
+        res: u32 = 0
+
+        """mys-embedded-c++
+        res = SDL_MapRGB(((SDL_Surface *)this->surface_p)->format, r, g, b);
+        """
+
+        return res
+
+    def fill_rect(self, rect: Rect, color: u32):
+        """mys-embedded-c++
+        SDL_Rect c_rect;
+        c_rect.x = rect->x;
+        c_rect.y = rect->y;
+        c_rect.w = rect->w;
+        c_rect.h = rect->h;
+        SDL_FillRect((SDL_Surface *)this->surface_p, &c_rect, color);
+        """
+
 class Texture:
     """mys-embedded-c++
     void *texture_p;
     """
+
+    def query(self) -> (i64, i64):
+        width: i64 = 0
+        height: i64 = 0
+
+        """mys-embedded-c++
+        int w;
+        int h;
+        SDL_QueryTexture((SDL_Texture *)this->texture_p, NULL, NULL, &w, &h);
+        width = w;
+        height = h;
+        """
+
+        return (width, height)
+
+    def update(self, surface: Surface):
+        """mys-embedded-c++
+        SDL_Surface *surface_p = (SDL_Surface *)surface->surface_p;
+        SDL_UpdateTexture((SDL_Texture *)this->texture_p,
+                           NULL,
+                           surface_p->pixels,
+                           surface_p->pitch);
+        """
 
 def sdl_init():
     res: i64 = 0
@@ -37,7 +172,7 @@ def sdl_init():
     """
 
     if res != 0:
-        raise ValueError("sdl_init error")
+        raise SdlError("sdl_init()")
 
 def ttf_init():
     """mys-embedded-c++
@@ -60,18 +195,9 @@ def create_window_and_renderer(width: i64,
     """
 
     if res != 0:
-        raise ValueError("create_window_and_renderer error")
+        raise SdlError("create_window_and_renderer()")
 
     return window, renderer
-
-def set_window_title(window: Window, title: string):
-    window.title = title.to_utf8()
-    window.title += 0
-
-    r"""mys-embedded-c++
-    SDL_SetWindowTitle((SDL_Window *)window->window_p,
-                       (const char *)window->title.m_bytes->data());
-    """
 
 def create_rgb_surface(flags: u32,
                        width: i64,
@@ -100,30 +226,9 @@ def create_rgb_surface(flags: u32,
     """
 
     if res != 0:
-        raise ValueError("create_rgb_surface error")
+        raise SdlError("create_rgb_surface()")
 
     return surface
-
-def create_texture(renderer: Renderer, width: i64, height: i64) -> Texture:
-    texture = Texture()
-    res: i64 = 0
-
-    """mys-embedded-c++
-    texture->texture_p = SDL_CreateTexture((SDL_Renderer *)renderer->renderer_p,
-                                           SDL_PIXELFORMAT_ARGB8888,
-                                           SDL_TEXTUREACCESS_STREAMING,
-                                           width,
-                                           height);
-
-    if (texture->texture_p == NULL) {
-        res = 1;
-    }
-    """
-
-    if res != 0:
-        raise ValueError("create_texture error")
-
-    return texture
 
 def img_init():
     res: i64 = 0
@@ -135,7 +240,7 @@ def img_init():
     """
 
     if res != 0:
-        raise ValueError("img_init error")
+        raise SdlError("img_init()")
 
 def img_load(path: string) -> Surface:
     surface = Surface()
@@ -152,108 +257,6 @@ def img_load(path: string) -> Surface:
     """
 
     if res != 0:
-        raise ValueError("img_init error")
+        raise SdlError("img_load()")
 
     return surface
-
-# ToDo: missing return value does not work.
-def create_texture_from_surface(renderer: Renderer, surface: Surface) -> Texture:
-    texture = Texture()
-    res: i64 = 0
-
-    """mys-embedded-c++
-    texture->texture_p = SDL_CreateTextureFromSurface(
-        (SDL_Renderer *)renderer->renderer_p,
-        (SDL_Surface *)surface->surface_p);
-
-    if (texture->texture_p == NULL) {
-        res = 1;
-    }
-    """
-
-    if res != 0:
-        raise ValueError("create_texture_from_surface error")
-
-    return texture
-
-def render_clear(renderer: Renderer):
-    """mys-embedded-c++
-    SDL_RenderClear((SDL_Renderer *)renderer->renderer_p);
-    """
-
-def query_texture(texture: Texture) -> (i64, i64):
-    width: i64 = 0
-    height: i64 = 0
-
-    """mys-embedded-c++
-    int w;
-    int h;
-    SDL_QueryTexture((SDL_Texture *)texture->texture_p, NULL, NULL, &w, &h);
-    width = w;
-    height = h;
-    """
-
-    return (width, height)
-
-class Rect:
-    x: i64
-    y: i64
-    w: i64
-    h: i64
-
-class Color:
-    r: u8
-    g: u8
-    b: u8
-    a: u8
-
-def render_copy(renderer: Renderer, texture: Texture, dst_rect: Rect):
-    """mys-embedded-c++
-    SDL_Rect dstrect;
-    SDL_Rect *dstrect_p = NULL;
-
-    if (dst_rect) {
-        dstrect.x = dst_rect->x;
-        dstrect.y = dst_rect->y;
-        dstrect.w = dst_rect->w;
-        dstrect.h = dst_rect->h;
-        dstrect_p = &dstrect;
-    }
-    SDL_RenderCopy((SDL_Renderer *)renderer->renderer_p,
-                   (SDL_Texture *)texture->texture_p,
-                   NULL,
-                   dstrect_p);
-    """
-
-def render_present(renderer: Renderer):
-    """mys-embedded-c++
-    SDL_RenderPresent((SDL_Renderer *)renderer->renderer_p);
-    """
-
-def update_texture(texture: Texture, surface: Surface):
-    """mys-embedded-c++
-    SDL_Surface *surface_p = (SDL_Surface *)surface->surface_p;
-    SDL_UpdateTexture((SDL_Texture *)texture->texture_p,
-                       NULL,
-                       surface_p->pixels,
-                       surface_p->pitch);
-    """
-
-def map_rgb(surface: Surface, r: u8, g: u8, b: u8) -> u32:
-    res: u32 = 0
-
-    """mys-embedded-c++
-    res = SDL_MapRGB(((SDL_Surface *)surface->surface_p)->format, r, g, b);
-    """
-
-    return res
-
-def fill_rect(surface: Surface, rect: Rect, color: u32):
-    """mys-embedded-c++
-    SDL_Rect c_rect;
-    c_rect.x = rect->x;
-    c_rect.y = rect->y;
-    c_rect.w = rect->w;
-    c_rect.h = rect->h;
-    SDL_FillRect((SDL_Surface *)surface->surface_p, &c_rect, color);
-    """

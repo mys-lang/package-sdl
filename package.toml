@@ -3,3 +3,6 @@ name = "mys_sdl"
 version = "0.1.0"
 authors = ["Erik Moqvist <erik.moqvist@gmail.com>"]
 description = "An SDL2 wrapper."
+
+[dependencies]
+random = "*"
