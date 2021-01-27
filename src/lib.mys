@@ -1,6 +1,116 @@
-def add(first: i32, second: i32) -> i32:
-    return first + second
+"""mys-embedded-c++-before-namespace
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+"""
 
-@test
-def test_add():
-    assert add(1, 2) == 3
+class Window:
+    """mys-embedded-c++
+    void *window_p;
+    """
+
+class Renderer:
+    """mys-embedded-c++
+    void *renderer_p;
+    """
+
+class Surface:
+    """mys-embedded-c++
+    void *surface_p;
+    """
+
+class Texture:
+    """mys-embedded-c++
+    void *texture_p;
+    """
+
+def sdl_init():
+    res: i64 = 0
+
+    """mys-embedded-c++
+    res = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
+    """
+
+    if res != 0:
+        raise ValueError("sdl_init error")
+
+def ttf_init():
+    """mys-embedded-c++
+    TTF_Init();
+    """
+
+def create_window_and_renderer(width: i64,
+                               height: i64,
+                               flags: u32) -> (Window, Renderer):
+    window = Window()
+    renderer = Renderer()
+    res: i64 = 0
+
+    """mys-embedded-c++
+    res = SDL_CreateWindowAndRenderer(width,
+                                      height,
+                                      flags,
+                                      (SDL_Window **)&window->window_p,
+                                      (SDL_Renderer **)&renderer->renderer_p);
+    """
+
+    if res != 0:
+        raise ValueError("create_window_and_renderer error")
+
+    return window, renderer
+
+def set_window_title(window: Window, title: string):
+    """mys-embedded-c++
+    SDL_SetWindowTitle((SDL_Window *)window->window_p, "Hello");
+    """
+
+def create_rgb_surface(flags: u32,
+                       width: i64,
+                       height: i64,
+                       bpp: i64,
+                       rmask: u32,
+                       gmask: u32,
+                       bmask: u32,
+                       amask: u32) -> Surface:
+    surface = Surface()
+    res: i64 = 0
+
+    """mys-embedded-c++
+    surface->surface_p = SDL_CreateRGBSurface(flags,
+                                              width,
+                                              height,
+                                              bpp,
+                                              rmask,
+                                              gmask,
+                                              bmask,
+                                              amask);
+
+    if (surface->surface_p == NULL) {
+        res = 1;
+    }
+    """
+
+    if res != 0:
+        raise ValueError("create_rgb_surface error")
+
+    return surface
+
+def create_texture(renderer: Renderer, width: i64, height: i64) -> Texture:
+    texture = Texture()
+    res: i64 = 0
+
+    """mys-embedded-c++
+    texture->texture_p = SDL_CreateTexture((SDL_Renderer *)renderer->renderer_p,
+                                           SDL_PIXELFORMAT_ARGB8888,
+                                           SDL_TEXTUREACCESS_STREAMING,
+                                           width,
+                                           height);
+
+    if (texture->texture_p == NULL) {
+        res = 1;
+    }
+    """
+
+    if res != 0:
+        raise ValueError("create_texture error")
+
+    return texture

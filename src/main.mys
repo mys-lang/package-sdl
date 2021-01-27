@@ -1,2 +1,51 @@
+from fiber import sleep
+from . import sdl_init
+from . import ttf_init
+from . import Window
+from . import Renderer
+from . import create_window_and_renderer
+from . import set_window_title
+from . import Surface
+from . import Texture
+from . import create_rgb_surface
+from . import create_texture
+
+TITLE: string = "tVintris"
+BLOCK_SIZE: i64 = 20
+FIELD_HEIGHT: i64 = 20
+FIELD_WIDTH: i64 = 10
+WIN_WIDTH: i64 = BLOCK_SIZE * FIELD_WIDTH * 3
+WIN_HEIGHT: i64 = BLOCK_SIZE * FIELD_HEIGHT
+
+class SDLContext:
+    width: i64
+    height: i64
+    screen: Surface
+    texture: Texture
+
+    def __init__(self, width: i64, height: i64):
+        self.width = width
+        self.height = height
+
+def set_sdl_context(width: i64, height: i64, title: string):
+    sdl_init()
+    ttf_init()
+    bpp = 32
+    window, renderer = create_window_and_renderer(width, height, 0)
+    set_window_title(window, title)
+    sdl = SDLContext(width, height)
+    sdl.screen = create_rgb_surface(0,
+                                    width,
+                                    height,
+                                    bpp,
+                                    0x00ff0000,
+                                    0x0000ff00,
+                                    0x000000ff,
+                                    0xff000000)
+    sdl.texture = create_texture(renderer, width, height)
+    # ToDo
+    sleep(3.0)
+
 def main():
-    print("Hello, world!")
+    print("tVintris -- tribute to venerable Twintris")
+    set_sdl_context(WIN_WIDTH, WIN_HEIGHT, TITLE)
