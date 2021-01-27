@@ -3,7 +3,7 @@ SDL2 wrapper
 
 An `SDL2`_ wrapper in the `Mys programming language`_.
 
-Based on `https://github.com/nsauzede/vsdl2`_.
+Based on https://github.com/nsauzede/vsdl2.
 
 Install SDL2 library:
 
