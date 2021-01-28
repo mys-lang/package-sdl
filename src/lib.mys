@@ -285,3 +285,21 @@ class KeyCode:
     Right
     Down
     L
+
+def get_performance_counter() -> u64:
+    count: u64 = 0
+
+    """mys-embedded-c++
+    count = SDL_GetPerformanceCounter();
+    """
+
+    return count
+
+def get_performance_frequency() -> u64:
+    frequency: u64 = 0
+
+    """mys-embedded-c++
+    frequency = SDL_GetPerformanceFrequency();
+    """
+
+    return frequency

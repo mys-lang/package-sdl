@@ -7,6 +7,8 @@ from . import create_rgb_surface
 from . import img_init
 from . import img_load
 from . import poll_event
+from . import get_performance_counter
+from . import get_performance_frequency
 from . import QuitEvent
 from . import KeyCode
 from . import Window
@@ -54,6 +56,26 @@ class NesRandom:
 
         return piece
 
+class FrameTiming:
+    ticks_per_frame: u64
+    start_tick: u64
+
+    def __init__(self):
+        self.ticks_per_frame = get_performance_frequency() / 30
+
+    def start(self):
+        self.start_tick = get_performance_counter()
+
+    def sleep_until_next_frame(self):
+        frame_ticks = get_performance_counter() - self.start_tick
+
+        if frame_ticks < self.ticks_per_frame:
+            sleep_ticks = self.ticks_per_frame - frame_ticks
+            sleep_time = f64(sleep_ticks) / f64(get_performance_frequency())
+            sleep(sleep_time)
+
+        self.start_tick = get_performance_counter()
+
 class Game:
     width: i64
     height: i64
@@ -92,6 +114,9 @@ class Game:
         self.nes_random = NesRandom()
 
     def run(self):
+        frame_timing = FrameTiming()
+        frame_timing.start()
+
         while True:
             # Just some dummy stats. Remove later.
             self.tetro_total += 1
@@ -102,7 +127,7 @@ class Game:
             if not self.handle_events():
                 break
 
-            sleep(0.5)
+            frame_timing.sleep_until_next_frame()
 
     def draw(self):
         self.renderer.clear()
