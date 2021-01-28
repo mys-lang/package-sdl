@@ -6,6 +6,9 @@ from . import create_window_and_renderer
 from . import create_rgb_surface
 from . import img_init
 from . import img_load
+from . import poll_event
+from . import QuitEvent
+from . import KeyCode
 from . import Window
 from . import Renderer
 from . import Surface
@@ -13,8 +16,9 @@ from . import Texture
 from . import Rect
 from . import Color
 
-TITLE: string = "tVintris"
+TITLE: string = "Mystris"
 BLOCK_SIZE: i64 = 20
+TETRO_SIZE: i64 = 4
 FIELD_HEIGHT: i64 = 20
 FIELD_WIDTH: i64 = 10
 WIN_WIDTH: i64 = BLOCK_SIZE * FIELD_WIDTH * 3
@@ -34,6 +38,10 @@ COLORS: [Color] = [
     Color(0, 170, 170, 0)
 ]
 
+@enum
+class State:
+    Running
+
 class Game:
     width: i64
     height: i64
@@ -45,6 +53,8 @@ class Game:
     renderer: Renderer
     tetro_stats: [i64]
     tetro_total: i64
+    key_fire: KeyCode
+    state: State
 
     def __init__(self, width: i64, height: i64, title: string):
         self.width = width
@@ -66,6 +76,8 @@ class Game:
         self.tmys_logo = self.renderer.create_texture_from_surface(self.mys_logo)
 
     def run(self):
+        running = True
+
         while True:
             # Just some dummy stats. Remove later.
             self.tetro_total += 1
@@ -79,7 +91,52 @@ class Game:
             self.draw_logo()
             self.renderer.present()
 
+            # while True:
+            #     match poll_event():
+            #         case QuitEvent():
+            #             running = False
+            #         case KeyDownEvent() as event:
+            #             self.handle_key(event.keysym.sym)
+            #         case _:
+            #             break
+
+            if not running:
+                break
+
             sleep(0.5)
+
+    def handle_key(self, key: KeyCode):
+        if key == KeyCode.Space:
+            self.handle_key_space()
+        elif key == self.key_fire:
+            self.handle_key_fire()
+
+        if self.state != State.Running:
+            return
+
+        if key == KeyCode.Up:
+            self.rotate_tetro()
+        elif key == KeyCode.Left:
+            self.move_tetro_left_right(-1)
+        elif key == KeyCode.Right:
+            self.move_tetro_left_right(1)
+        elif key == KeyCode.Down:
+            self.move_tetro_down()
+
+    def handle_key_space(self):
+        pass
+
+    def handle_key_fire(self):
+        pass
+
+    def rotate_tetro(self):
+        pass
+
+    def move_tetro_left_right(self, dx: i64):
+        pass
+
+    def move_tetro_down(self):
+        pass
 
     def fill_rect(self, rect: Rect, color: Color):
         value = self.screen.map_rgb(color.r, color.g, color.b)
@@ -93,19 +150,18 @@ class Game:
     def draw_vertial_splitters(self):
         rect = Rect(BLOCK_SIZE * FIELD_WIDTH + 2, 0, 2, self.height)
         self.fill_rect(rect, FOREGROUND_COLOR)
-
-        rect = Rect(WIN_WIDTH - BLOCK_SIZE * FIELD_WIDTH - 4, 0, 2, self.height)
+        rect.x = WIN_WIDTH - BLOCK_SIZE * FIELD_WIDTH - 4
         self.fill_rect(rect, FOREGROUND_COLOR)
 
     def draw_stats(self):
         for i, stat in enumerate(self.tetro_stats):
-            s = 10
+            height = 10
 
             if self.tetro_total > 0:
-                s += 90 * stat / self.tetro_total
+                height += 90 * stat / self.tetro_total
 
             width = BLOCK_SIZE
-            height = s * 4 * width / 100
+            height *= 4 * width / 100
             rect = Rect((WIN_WIDTH - 7 * (width + 1)) / 2 + i * (width + 1),
                         WIN_HEIGHT * 3 / 4 - height,
                         width,

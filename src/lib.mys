@@ -260,3 +260,27 @@ def img_load(path: string) -> Surface:
         raise SdlError("img_load()")
 
     return surface
+
+@trait
+class Event:
+    pass
+
+class QuitEvent(Event):
+    pass
+
+class KeyDownEvent(Event):
+    keysym: KeySym
+
+class KeySym:
+    sym: KeyCode
+
+def poll_event() -> Event:
+    return QuitEvent()
+
+@enum
+class KeyCode:
+    Space
+    Up
+    Left
+    Right
+    Down
