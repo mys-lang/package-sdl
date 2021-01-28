@@ -60,7 +60,7 @@ class Game:
     screen: Surface
     texture: Texture
     mys_logo: Surface
-    tmys_logo: Texture
+    mys_logo_texture: Texture
     window: Window
     renderer: Renderer
     tetro_stats: [i64]
@@ -86,7 +86,7 @@ class Game:
                                          0xff000000)
         self.texture = self.renderer.create_texture(width, height)
         self.mys_logo = img_load(MYS_LOGO)
-        self.tmys_logo = self.renderer.create_texture_from_surface(self.mys_logo)
+        self.mys_logo_texture = self.renderer.create_texture_from_surface(self.mys_logo)
         self.nes_random = NesRandom()
 
     def run(self):
@@ -112,8 +112,7 @@ class Game:
         self.renderer.present()
 
     def draw_background(self):
-        self.fill_rect(Rect(0, 0, self.width, self.height),
-                       BACKGROUND_COLOR)
+        self.fill_rect(Rect(0, 0, self.width, self.height), BACKGROUND_COLOR)
 
     def draw_vertial_splitters(self):
         rect = Rect(BLOCK_SIZE * FIELD_WIDTH + 2, 0, 2, self.height)
@@ -141,8 +140,9 @@ class Game:
         self.renderer.copy(self.texture, None)
 
     def draw_logo(self):
-        tw, th = self.tmys_logo.query()
-        self.renderer.copy(self.tmys_logo, Rect((WIN_WIDTH - tw) / 2, 20, tw, th))
+        tw, th = self.mys_logo_texture.query()
+        self.renderer.copy(self.mys_logo_texture,
+                           Rect((WIN_WIDTH - tw) / 2, 20, tw, th))
 
     def handle_events(self) -> bool:
         running: bool = True
