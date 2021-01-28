@@ -20,7 +20,7 @@ class SdlError(Error):
     message: string
 
 class Window:
-    """mys-embedded-c++
+    c"""
     void *window_p;
     """
 
@@ -33,13 +33,13 @@ class Window:
         self.title = title.to_utf8()
         self.title += 0
 
-        r"""mys-embedded-c++
+        c"""
         SDL_SetWindowTitle((SDL_Window *)this->window_p,
                            (const char *)this->title.m_bytes->data());
         """
 
 class Renderer:
-    """mys-embedded-c++
+    c"""
     void *renderer_p;
     """
 
@@ -47,7 +47,7 @@ class Renderer:
         texture = Texture()
         res: i64 = 0
 
-        """mys-embedded-c++
+        c"""
         texture->texture_p = SDL_CreateTexture((SDL_Renderer *)this->renderer_p,
                                                SDL_PIXELFORMAT_ARGB8888,
                                                SDL_TEXTUREACCESS_STREAMING,
@@ -69,7 +69,7 @@ class Renderer:
         texture = Texture()
         res: i64 = 0
 
-        """mys-embedded-c++
+        c"""
         texture->texture_p = SDL_CreateTextureFromSurface(
             (SDL_Renderer *)this->renderer_p,
             (SDL_Surface *)surface->surface_p);
@@ -85,12 +85,12 @@ class Renderer:
         return texture
 
     def clear(self):
-        """mys-embedded-c++
+        c"""
         SDL_RenderClear((SDL_Renderer *)this->renderer_p);
         """
 
     def copy(self, texture: Texture, dst_rect: Rect):
-        """mys-embedded-c++
+        c"""
         SDL_Rect dstrect;
         SDL_Rect *dstrect_p = NULL;
 
@@ -108,26 +108,26 @@ class Renderer:
         """
 
     def present(self):
-        """mys-embedded-c++
+        c"""
         SDL_RenderPresent((SDL_Renderer *)this->renderer_p);
         """
 
 class Surface:
-    """mys-embedded-c++
+    c"""
     void *surface_p;
     """
 
     def map_rgb(self, r: u8, g: u8, b: u8) -> u32:
         res: u32 = 0
 
-        """mys-embedded-c++
+        c"""
         res = SDL_MapRGB(((SDL_Surface *)this->surface_p)->format, r, g, b);
         """
 
         return res
 
     def fill_rect(self, rect: Rect, color: u32):
-        """mys-embedded-c++
+        c"""
         SDL_Rect c_rect;
         c_rect.x = rect->x;
         c_rect.y = rect->y;
@@ -137,7 +137,7 @@ class Surface:
         """
 
 class Texture:
-    """mys-embedded-c++
+    c"""
     void *texture_p;
     """
 
@@ -145,7 +145,7 @@ class Texture:
         width: i64 = 0
         height: i64 = 0
 
-        """mys-embedded-c++
+        c"""
         int w;
         int h;
         SDL_QueryTexture((SDL_Texture *)this->texture_p, NULL, NULL, &w, &h);
@@ -156,7 +156,7 @@ class Texture:
         return (width, height)
 
     def update(self, surface: Surface):
-        """mys-embedded-c++
+        c"""
         SDL_Surface *surface_p = (SDL_Surface *)surface->surface_p;
         SDL_UpdateTexture((SDL_Texture *)this->texture_p,
                            NULL,
@@ -167,7 +167,7 @@ class Texture:
 def sdl_init():
     res: i64 = 0
 
-    """mys-embedded-c++
+    c"""
     res = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
     """
 
@@ -175,7 +175,7 @@ def sdl_init():
         raise SdlError("sdl_init()")
 
 def ttf_init():
-    """mys-embedded-c++
+    c"""
     TTF_Init();
     """
 
@@ -186,7 +186,7 @@ def create_window_and_renderer(width: i64,
     renderer = Renderer()
     res: i64 = 0
 
-    """mys-embedded-c++
+    c"""
     res = SDL_CreateWindowAndRenderer(width,
                                       height,
                                       flags,
@@ -210,7 +210,7 @@ def create_rgb_surface(flags: u32,
     surface = Surface()
     res: i64 = 0
 
-    """mys-embedded-c++
+    c"""
     surface->surface_p = SDL_CreateRGBSurface(flags,
                                               width,
                                               height,
@@ -233,7 +233,7 @@ def create_rgb_surface(flags: u32,
 def img_init():
     res: i64 = 0
 
-    """mys-embedded-c++
+    c"""
     if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
         res = 1;
     }
@@ -248,7 +248,7 @@ def img_load(path: string) -> Surface:
     path_bytes = path.to_utf8()
     path_bytes += 0
 
-    """mys-embedded-c++
+    c"""
     surface->surface_p = IMG_Load((const char *)path_bytes.m_bytes->data());
 
     if (surface->surface_p == NULL) {
@@ -289,7 +289,7 @@ class KeyCode:
 def get_performance_counter() -> u64:
     count: u64 = 0
 
-    """mys-embedded-c++
+    c"""
     count = SDL_GetPerformanceCounter();
     """
 
@@ -298,7 +298,7 @@ def get_performance_counter() -> u64:
 def get_performance_frequency() -> u64:
     frequency: u64 = 0
 
-    """mys-embedded-c++
+    c"""
     frequency = SDL_GetPerformanceFrequency();
     """
 
