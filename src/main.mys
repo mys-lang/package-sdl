@@ -23,7 +23,7 @@ FIELD_HEIGHT: i64 = 20
 FIELD_WIDTH: i64 = 10
 WIN_WIDTH: i64 = BLOCK_SIZE * FIELD_WIDTH * 3
 WIN_HEIGHT: i64 = BLOCK_SIZE * FIELD_HEIGHT
-MYS_LOGO: string = "images/mys-logo-30-25.png"
+MYS_LOGO_PATH: string = "images/mys-logo-30-25.png"
 
 BACKGROUND_COLOR: Color = Color(0, 0, 0, 0)
 FOREGROUND_COLOR: Color = Color(0, 170, 170, 0)
@@ -85,7 +85,7 @@ class Game:
                                          0x000000ff,
                                          0xff000000)
         self.texture = self.renderer.create_texture(width, height)
-        self.mys_logo = img_load(MYS_LOGO)
+        self.mys_logo = img_load(MYS_LOGO_PATH)
         self.mys_logo_texture = self.renderer.create_texture_from_surface(self.mys_logo)
         self.nes_random = NesRandom()
 
