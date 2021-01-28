@@ -87,6 +87,8 @@ class Game:
         self.texture = self.renderer.create_texture(width, height)
         self.mys_logo = img_load(MYS_LOGO_PATH)
         self.mys_logo_texture = self.renderer.create_texture_from_surface(self.mys_logo)
+        self.key_fire = KeyCode.L
+        self.state = State.Running
         self.nes_random = NesRandom()
 
     def run(self):
