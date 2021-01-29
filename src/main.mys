@@ -9,7 +9,10 @@ from . import img_load
 from . import poll_event
 from . import get_performance_counter
 from . import get_performance_frequency
+from . import Event
 from . import QuitEvent
+from . import KeySym
+from . import KeyDownEvent
 from . import KeyCode
 from . import Window
 from . import Renderer
@@ -172,16 +175,16 @@ class Game:
                            Rect((WIN_WIDTH - tw) / 2, 20, tw, th))
 
     def handle_events(self) -> bool:
-        running: bool = True
+        running = True
 
-        # while True:
-        #     match poll_event():
-        #         case QuitEvent():
-        #             running = False
-        #         case KeyDownEvent() as event:
-        #             self.handle_key(event.keysym.sym)
-        #         case _:
-        #             break
+        while True:
+            match poll_event():
+                case QuitEvent():
+                    running = False
+                case KeyDownEvent() as event:
+                    self.handle_key(event.keysym.sym)
+                case _:
+                    break
 
         return running
 
@@ -197,26 +200,34 @@ class Game:
         if key == KeyCode.Up:
             self.rotate_tetro()
         elif key == KeyCode.Left:
-            self.move_tetro_left_right(-1)
+            self.move_tetro_left()
         elif key == KeyCode.Right:
-            self.move_tetro_left_right(1)
+            self.move_tetro_right()
         elif key == KeyCode.Down:
             self.move_tetro_down()
 
     def handle_key_space(self):
-        pass
+        print("handle_key_space")
 
     def handle_key_fire(self):
-        pass
+        print("handle_key_fire")
 
     def rotate_tetro(self):
-        pass
+        print("rotate_tetro")
 
-    def move_tetro_left_right(self, dx: i64):
+    def move_tetro_left(self):
+        print("move_tetro_left")
+        self.move_tetro_side(1)
+
+    def move_tetro_right(self):
+        print("move_tetro_right")
+        self.move_tetro_side(-1)
+
+    def move_tetro_side(self, dx: i64):
         pass
 
     def move_tetro_down(self):
-        pass
+        print("move_tetro_down")
 
     def fill_rect(self, rect: Rect, color: Color):
         value = self.screen.map_rgb(color.r, color.g, color.b)

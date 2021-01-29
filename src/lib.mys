@@ -256,16 +256,48 @@ class KeySym:
     sym: KeyCode
 
 def poll_event() -> Event:
+    res: i64 = 0
+    key_code = 0
+
+    c"""
+    SDL_Event event;
+
+    res = SDL_PollEvent(&event);
+    """
+
+    if res == 0:
+        return None
+
+    c"""
+    switch (event.type) {
+
+    case SDL_QUIT:
+    """
+
     return QuitEvent()
+
+    c"""
+    case SDL_KEYDOWN:
+        key_code = event.key.keysym.sym;
+    """
+
+    try:
+        return KeyDownEvent(KeySym(KeyCode(key_code)))
+    except ValueError:
+        return None
+
+    c"}"
+
+    return None
 
 @enum
 class KeyCode:
-    Space
-    Up
-    Left
-    Right
-    Down
-    L
+    Space = 32
+    L = 108
+    Right = 1073741903
+    Left = 1073741904
+    Down = 1073741905
+    Up = 1073741906
 
 def get_performance_counter() -> u64:
     count: u64 = 0
