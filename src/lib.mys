@@ -20,9 +20,7 @@ class SdlError(Error):
     message: string
 
 class Window:
-    c"""
-    void *window_p;
-    """
+    c"void *window_p;"
 
     title: bytes
 
@@ -39,9 +37,7 @@ class Window:
         """
 
 class Renderer:
-    c"""
-    void *renderer_p;
-    """
+    c"void *renderer_p;"
 
     def create_texture(self, width: i64, height: i64) -> Texture:
         texture = Texture()
@@ -85,9 +81,7 @@ class Renderer:
         return texture
 
     def clear(self):
-        c"""
-        SDL_RenderClear((SDL_Renderer *)this->renderer_p);
-        """
+        c"SDL_RenderClear((SDL_Renderer *)this->renderer_p);"
 
     def copy(self, texture: Texture, dst_rect: Rect):
         c"""
@@ -108,21 +102,15 @@ class Renderer:
         """
 
     def present(self):
-        c"""
-        SDL_RenderPresent((SDL_Renderer *)this->renderer_p);
-        """
+        c"SDL_RenderPresent((SDL_Renderer *)this->renderer_p);"
 
 class Surface:
-    c"""
-    void *surface_p;
-    """
+    c"void *surface_p;"
 
     def map_rgb(self, r: u8, g: u8, b: u8) -> u32:
         res: u32 = 0
 
-        c"""
-        res = SDL_MapRGB(((SDL_Surface *)this->surface_p)->format, r, g, b);
-        """
+        c"res = SDL_MapRGB(((SDL_Surface *)this->surface_p)->format, r, g, b);"
 
         return res
 
@@ -137,9 +125,7 @@ class Surface:
         """
 
 class Texture:
-    c"""
-    void *texture_p;
-    """
+    c"void *texture_p;"
 
     def query(self) -> (i64, i64):
         width: i64 = 0
@@ -167,17 +153,13 @@ class Texture:
 def sdl_init():
     res: i64 = 0
 
-    c"""
-    res = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
-    """
+    c"res = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);"
 
     if res != 0:
         raise SdlError("sdl_init()")
 
 def ttf_init():
-    c"""
-    TTF_Init();
-    """
+    c"TTF_Init();"
 
 def create_window_and_renderer(width: i64,
                                height: i64,
@@ -289,17 +271,13 @@ class KeyCode:
 def get_performance_counter() -> u64:
     count: u64 = 0
 
-    c"""
-    count = SDL_GetPerformanceCounter();
-    """
+    c"count = SDL_GetPerformanceCounter();"
 
     return count
 
 def get_performance_frequency() -> u64:
     frequency: u64 = 0
 
-    c"""
-    frequency = SDL_GetPerformanceFrequency();
-    """
+    c"frequency = SDL_GetPerformanceFrequency();"
 
     return frequency
