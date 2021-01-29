@@ -21,7 +21,6 @@ class SdlError(Error):
 
 class Window:
     c"void *window_p;"
-
     title: bytes
 
     def __init__(self):
