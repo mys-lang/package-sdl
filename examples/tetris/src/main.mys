@@ -425,7 +425,7 @@ class Game:
                     # Drop it and generate a new one
                     self.drop_tetro()
                     self.new_tetro()
-                    self.delete_completed_lines()
+                    self.delete_cleared_lines()
 
                 return
 
@@ -451,19 +451,27 @@ class Game:
         value = self.screen.map_rgb(color.r, color.g, color.b)
         self.screen.fill_rect(rect, value)
 
-    def delete_completed_lines(self):
-        for y in range(2, FIELD_HEIGHT + 3):
-            self.delete_completed_line(y)
+    def delete_cleared_lines(self):
+        number_of_cleared_lines = 0
 
-    def delete_completed_line(self, y: i64):
+        for y in range(2, FIELD_HEIGHT + 3):
+            if self.delete_cleared_line(y):
+                number_of_cleared_lines += 1
+
+        if number_of_cleared_lines == 4:
+            print("BOOM!")
+
+    def delete_cleared_line(self, y: i64) -> bool:
         for v in slice(self.field[y], 1, -1):
             if v == 0:
-                return
+                return False
 
         for yp in range(y, 2, -1):
             self.field[yp] = self.field[yp - 1]
 
         self.field[2] = self.create_empty_row()
+
+        return True
 
 def main():
     print("Mystris -- tribute to venerable Twintris")
