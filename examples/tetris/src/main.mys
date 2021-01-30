@@ -157,6 +157,13 @@ TETROS: [Tetro] = [
           ])
 ]
 
+def create_empty_row() -> [i64]:
+    row = [0 for _ in range(FIELD_WIDTH + 2)]
+    row[0] = -1
+    row[-1] = -1
+
+    return row
+
 class Game:
     width: i64
     height: i64
@@ -212,28 +219,13 @@ class Game:
         self.new_tetro()
 
         # Generate the field, fill it with 0's, add -1's on each edge
-        self.field = []
-
-        for i in range(FIELD_HEIGHT + 4):
-            self.field.append(self.create_empty_row())
-
+        self.field = [create_empty_row() for _ in range(FIELD_HEIGHT + 4)]
         first_row = self.field[0]
         last_row = self.field[-1]
 
-        for j in range(FIELD_WIDTH + 2):
-            first_row[j] = -1
-            last_row[j] = -1
-
-    def create_empty_row(self) -> [i64]:
-        row: [i64] = []
-
-        for j in range(FIELD_WIDTH + 2):
-            row.append(0)
-
-        row[0] = -1
-        row[-1] = -1
-
-        return row
+        for i in range(FIELD_WIDTH + 2):
+            first_row[i] = -1
+            last_row[i] = -1
 
     def run(self):
         frame_timing = FrameTiming()
@@ -469,7 +461,7 @@ class Game:
         for yp in range(y, 2, -1):
             self.field[yp] = self.field[yp - 1]
 
-        self.field[2] = self.create_empty_row()
+        self.field[2] = create_empty_row()
 
         return True
 
