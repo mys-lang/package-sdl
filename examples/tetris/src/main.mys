@@ -90,7 +90,72 @@ class Block:
 
 class Tetro:
     color_index: i64
-    blocks: [Block]
+    blocks: [[Block]]
+
+TETROS: [Tetro] = [
+    #  xxx
+    #   x
+    Tetro(0,
+          [
+              [Block(2, 1), Block(3, 1), Block(4, 1), Block(3, 2)],
+              [Block(3, 0), Block(2, 1), Block(3, 1), Block(3, 2)],
+              [Block(2, 1), Block(3, 1), Block(4, 1), Block(3, 0)],
+              [Block(3, 0), Block(3, 1), Block(4, 1), Block(3, 2)]
+          ]),
+    #  xxx
+    #    x
+    Tetro(1,
+          [
+              [Block(2, 1), Block(3, 1), Block(4, 1), Block(4, 2)],
+              [Block(3, 0), Block(3, 1), Block(2, 2), Block(3, 2)],
+              [Block(2, 0), Block(2, 1), Block(3, 1), Block(4, 1)],
+              [Block(3, 0), Block(4, 0), Block(3, 1), Block(3, 2)]
+          ]),
+    #  xx
+    #   xx
+    Tetro(2,
+          [
+              [Block(2, 1), Block(3, 1), Block(3, 2), Block(4, 2)],
+              [Block(4, 0), Block(3, 1), Block(4, 1), Block(3, 2)],
+              [Block(2, 1), Block(3, 1), Block(3, 2), Block(4, 2)],
+              [Block(4, 0), Block(3, 1), Block(4, 1), Block(3, 2)]
+          ]),
+    #  xx
+    #  xx
+    Tetro(3,
+          [
+              [Block(2, 1), Block(3, 1), Block(2, 2), Block(3, 2)],
+              [Block(2, 1), Block(3, 1), Block(2, 2), Block(3, 2)],
+              [Block(2, 1), Block(3, 1), Block(2, 2), Block(3, 2)],
+              [Block(2, 1), Block(3, 1), Block(2, 2), Block(3, 2)]
+          ]),
+    #   xx
+    #  xx
+    Tetro(4,
+          [
+              [Block(3, 1), Block(4, 1), Block(2, 2), Block(3, 2)],
+              [Block(3, 0), Block(3, 1), Block(4, 1), Block(4, 2)],
+              [Block(3, 1), Block(4, 1), Block(2, 2), Block(3, 2)],
+              [Block(3, 0), Block(3, 1), Block(4, 1), Block(4, 2)]
+          ]),
+    #  xxx
+    #  x
+    Tetro(5,
+          [
+              [Block(2, 1), Block(3, 1), Block(4, 1), Block(2, 2)],
+              [Block(2, 0), Block(3, 0), Block(3, 1), Block(3, 2)],
+              [Block(4, 0), Block(2, 1), Block(3, 1), Block(4, 1)],
+              [Block(3, 0), Block(3, 1), Block(3, 2), Block(4, 2)]
+          ]),
+    # xxxx
+    Tetro(6,
+          [
+              [Block(1, 1), Block(2, 1), Block(3, 1), Block(4, 1)],
+              [Block(3, -1), Block(3, 0), Block(3, 1), Block(3, 2)],
+              [Block(1, 1), Block(2, 1), Block(3, 1), Block(4, 1)],
+              [Block(3, -1), Block(3, 0), Block(3, 1), Block(3, 2)]
+          ])
+]
 
 class Game:
     width: i64
@@ -117,8 +182,9 @@ class Game:
     # X offset of the game display
     x_offset: i64
     tetro: Tetro
-    pos_y: i64
-    pos_x: i64
+    x_pos: i64
+    y_pos: i64
+    rotation_index: i64
 
     def __init__(self, width: i64, height: i64, title: string):
         self.width = width
@@ -143,22 +209,13 @@ class Game:
         self.nes_random = NesRandom()
         self.font = Font(FONT_PATH, FONT_SIZE)
         self.x_offset = 1
-        self.tetro = Tetro(3, [Block(4, 4), Block(4, 5), Block(4, 6), Block(4, 7)])
-        self.pos_y = 0
-        self.pos_x = 0
+        self.new_tetro()
 
         # Generate the field, fill it with 0's, add -1's on each edge
         self.field = []
 
-        for i in range(FIELD_HEIGHT + 2):
-            row: [i64] = []
-
-            for j in range(FIELD_WIDTH + 2):
-                row.append(0)
-
-            row[0] = -1
-            row[-1] = -1
-            self.field.append(row)
+        for i in range(FIELD_HEIGHT + 4):
+            self.field.append(self.create_empty_row())
 
         first_row = self.field[0]
         last_row = self.field[-1]
@@ -166,6 +223,17 @@ class Game:
         for j in range(FIELD_WIDTH + 2):
             first_row[j] = -1
             last_row[j] = -1
+
+    def create_empty_row(self) -> [i64]:
+        row: [i64] = []
+
+        for j in range(FIELD_WIDTH + 2):
+            row.append(0)
+
+        row[0] = -1
+        row[-1] = -1
+
+        return row
 
     def run(self):
         frame_timing = FrameTiming()
@@ -175,12 +243,9 @@ class Game:
         while True:
             frame_counter += 1
 
-            # Just some dummy stats. Remove later.
-            self.tetro_total += 1
-            self.tetro_stats[self.nes_random.random()] += 1
-
             if frame_counter % 30 == 0:
                 self.move_tetro_down()
+                self.delete_completed_lines()
 
             self.draw()
 
@@ -205,21 +270,22 @@ class Game:
         self.fill_rect(Rect(0, 0, self.width, self.height), BACKGROUND_COLOR)
 
     def draw_tetro(self):
-        for block in self.tetro.blocks:
-            self.draw_block(self.pos_y + block.y,
-                            self.pos_x + block.x,
+        for block in self.tetro.blocks[self.rotation_index]:
+            self.draw_block(self.x_pos + block.x,
+                            self.y_pos + block.y,
                             self.tetro.color_index)
 
     def draw_field(self):
-        for i  in range(1, FIELD_HEIGHT + 1):
-            for j in range(1, FIELD_WIDTH + 1):
-                row = self.field[i]
+        for y in range(3, FIELD_HEIGHT + 3):
+            for x in range(1, FIELD_WIDTH + 1):
+                row = self.field[y]
 
-                if row[j] > 0:
-                    self.draw_block(i, j, row[j] - 1)
+                if row[x] > 0:
+                    self.draw_block(x, y, row[x] - 1)
 
     def draw_block(self, x: i64, y: i64, color_index: i64):
-        rect = Rect(self.x_offset + (y - 1) * BLOCK_SIZE, (x - 1) * BLOCK_SIZE,
+        rect = Rect(self.x_offset + (x - 1) * BLOCK_SIZE,
+                    (y - 3) * BLOCK_SIZE,
                     BLOCK_SIZE - 1,
                     BLOCK_SIZE - 1)
         self.fill_rect(rect, TETRO_COLORS[color_index])
@@ -317,7 +383,12 @@ class Game:
         print("handle_key_fire")
 
     def rotate_tetro(self):
-        print("rotate_tetro")
+        rotation_index = self.rotation_index
+        self.rotation_index += 1
+        self.rotation_index %= TETRO_SIZE
+
+        if not self.move_tetro_side(0):
+            self.rotation_index = rotation_index
 
     def move_tetro_left(self):
         self.move_tetro_side(-1)
@@ -327,47 +398,74 @@ class Game:
 
     def move_tetro_side(self, dx: i64) -> bool:
         # Reached left/right edge or another tetro?
-        for block in self.tetro.blocks:
-            y = block.y + self.pos_y
-            x = block.x + self.pos_x + dx
-            row = self.field[y]
+        for block in self.tetro.blocks[self.rotation_index]:
+            x = block.x + self.x_pos + dx
+            row = self.field[block.y + self.y_pos]
 
             if row[x] != 0:
                 # Do not move
                 return False
 
-        self.pos_x += dx
+        self.x_pos += dx
 
         return True
 
     def move_tetro_down(self):
-        for block in self.tetro.blocks:
-            y = block.y + self.pos_y + 1
-            x = block.x + self.pos_x
+        for block in self.tetro.blocks[self.rotation_index]:
+            y = block.y + self.y_pos + 1
+            x = block.x + self.x_pos
             # Reached the bottom of the screen or another block?
             row = self.field[y]
 
             if row[x] != 0:
-                # The new tetro has no space to drop => end of the game
-                if self.pos_y < 2:
+                if self.y_pos < 3:
+                    # The new tetro has no space to drop => end of the game
                     self.state = State.GameOver
                     self.tetro_total = 0
-                    return
+                else:
+                    # Drop it and generate a new one
+                    self.drop_tetro()
+                    self.new_tetro()
 
-                # Drop it and generate a new one
-                self.drop_tetro()
-                # g.generate_tetro()
-                # C.Mix_PlayChannel(0, g.sdl.actx.waves[0], 0)
                 return
 
-        self.pos_y += 1
+        self.y_pos += 1
+
+    def new_tetro(self):
+        self.x_pos = FIELD_WIDTH / 2 - TETRO_SIZE / 2
+        self.y_pos = 2
+        tetro_index = self.nes_random.random()
+        self.tetro_total += 1
+        self.tetro_stats[tetro_index] += 1
+        self.tetro = TETROS[tetro_index]
+        self.rotation_index = 0
 
     def drop_tetro(self):
-        pass
+        for block in self.tetro.blocks[self.rotation_index]:
+            x = block.x + self.x_pos
+            y = block.y + self.y_pos
+            row = self.field[y]
+            row[x] = self.tetro.color_index + 1
 
     def fill_rect(self, rect: Rect, color: Color):
         value = self.screen.map_rgb(color.r, color.g, color.b)
         self.screen.fill_rect(rect, value)
+
+    def delete_completed_lines(self):
+        for y in range(2, FIELD_HEIGHT + 3):
+            self.delete_completed_line(y)
+
+    def delete_completed_line(self, y: i64):
+        for v in slice(self.field[y], 1, -1):
+            if v == 0:
+                return
+
+        print("full!", y)
+
+        for yp in range(y, 2, -1):
+            self.field[yp] = self.field[yp - 1]
+
+        self.field[2] = self.create_empty_row()
 
 def main():
     print("Mystris -- tribute to venerable Twintris")
