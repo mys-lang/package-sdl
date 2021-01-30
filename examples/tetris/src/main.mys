@@ -164,6 +164,15 @@ def create_empty_row() -> [i64]:
 
     return row
 
+def create_empty_field() -> [[i64]]:
+    field = [create_empty_row() for _ in range(FIELD_HEIGHT + 4)]
+
+    for i in range(FIELD_WIDTH + 2):
+        field[0][i] = -1
+        field[-1][i] = -1
+
+    return field
+
 class Game:
     width: i64
     height: i64
@@ -217,15 +226,7 @@ class Game:
         self.font = Font(FONT_PATH, FONT_SIZE)
         self.x_offset = 1
         self.new_tetro()
-
-        # Generate the field, fill it with 0's, add -1's on each edge
-        self.field = [create_empty_row() for _ in range(FIELD_HEIGHT + 4)]
-        first_row = self.field[0]
-        last_row = self.field[-1]
-
-        for i in range(FIELD_WIDTH + 2):
-            first_row[i] = -1
-            last_row[i] = -1
+        self.field = create_empty_field()
 
     def run(self):
         frame_timing = FrameTiming()
