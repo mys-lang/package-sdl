@@ -1,26 +1,26 @@
 from fiber import sleep
 from random.pseudo import randint
-from . import sdl_init
-from . import ttf_init
-from . import create_window_and_renderer
-from . import create_rgb_surface
-from . import img_init
-from . import img_load
-from . import poll_event
-from . import get_performance_counter
-from . import get_performance_frequency
-from . import Event
-from . import QuitEvent
-from . import KeySym
-from . import KeyDownEvent
-from . import KeyCode
-from . import Window
-from . import Renderer
-from . import Surface
-from . import Texture
-from . import Rect
-from . import Color
-from . import Font
+from sdl import sdl_init
+from sdl import ttf_init
+from sdl import create_window_and_renderer
+from sdl import create_rgb_surface
+from sdl import img_init
+from sdl import img_load
+from sdl import poll_event
+from sdl import get_performance_counter
+from sdl import get_performance_frequency
+from sdl import Event
+from sdl import QuitEvent
+from sdl import KeySym
+from sdl import KeyDownEvent
+from sdl import KeyCode
+from sdl import Window
+from sdl import Renderer
+from sdl import Surface
+from sdl import Texture
+from sdl import Rect
+from sdl import Color
+from sdl import Font
 
 TITLE: string = "Mystris"
 BLOCK_SIZE: i64 = 20
@@ -358,7 +358,7 @@ class Game:
                 self.drop_tetro()
                 # g.generate_tetro()
                 # C.Mix_PlayChannel(0, g.sdl.actx.waves[0], 0)
-                # return
+                return
 
         self.pos_y += 1
 
