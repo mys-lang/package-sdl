@@ -460,8 +460,6 @@ class Game:
             if v == 0:
                 return
 
-        print("full!", y)
-
         for yp in range(y, 2, -1):
             self.field[yp] = self.field[yp - 1]
 
