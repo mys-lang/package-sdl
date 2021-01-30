@@ -245,7 +245,6 @@ class Game:
 
             if frame_counter % 30 == 0:
                 self.move_tetro_down()
-                self.delete_completed_lines()
 
             self.draw()
 
@@ -426,6 +425,7 @@ class Game:
                     # Drop it and generate a new one
                     self.drop_tetro()
                     self.new_tetro()
+                    self.delete_completed_lines()
 
                 return
 
