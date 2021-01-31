@@ -7,4 +7,4 @@ Build and run.
 
 .. code-block::
 
-   $ make
+   $ mys run
