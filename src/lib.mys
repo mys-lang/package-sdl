@@ -1,7 +1,8 @@
-"""mys-embedded-c++-before-namespace
+c"""source-before-namespace
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 """
 
 class Rect:
@@ -166,6 +167,17 @@ def sdl_init():
 def ttf_init():
     c"TTF_Init();"
 
+def mix_init():
+    c"Mix_Init(0);"
+
+def open_audio(frequency: i64, channels: i64, chunksize: i64):
+    res = 0
+
+    c"Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, channels, chunksize);"
+
+    if res != 0:
+        raise SdlError("Mix_OpenAudio()")
+
 def create_window_and_renderer(width: i64,
                                height: i64,
                                flags: u32) -> (Window, Renderer):
@@ -232,11 +244,11 @@ def img_init():
 def img_load(path: string) -> Surface:
     surface = Surface()
     res = 0
-    path_bytes = path.to_utf8()
-    path_bytes += 0
+    path_utf8 = path.to_utf8()
+    path_utf8 += 0
 
     c"""
-    surface->surface_p = IMG_Load((const char *)path_bytes.m_bytes->data());
+    surface->surface_p = IMG_Load((const char *)path_utf8.m_bytes->data());
 
     if (surface->surface_p == NULL) {
         res = 1;
@@ -324,11 +336,11 @@ class Font:
 
     def __init__(self, path: string, size: i64):
         res = 0
-        path_bytes = path.to_utf8()
-        path_bytes += 0
+        path_utf8 = path.to_utf8()
+        path_utf8 += 0
 
         c"""
-        this->font_p = TTF_OpenFont((const char *)path_bytes.m_bytes->data(), size);
+        this->font_p = TTF_OpenFont((const char *)path_utf8.m_bytes->data(), size);
 
         if (this->font_p == NULL) {
             res = 1;
@@ -339,8 +351,8 @@ class Font:
             raise SdlError("Font()")
 
     def render_solid(self, text: string, color: Color) -> Surface:
-        text_bytes = text.to_utf8()
-        text_bytes += 0
+        text_utf8 = text.to_utf8()
+        text_utf8 += 0
         surface = Surface()
         res = 0
 
@@ -354,7 +366,7 @@ class Font:
 
         surface->surface_p = TTF_RenderText_Solid(
             (TTF_Font *)this->font_p,
-            (const char *)text_bytes.m_bytes->data(),
+            (const char *)text_utf8.m_bytes->data(),
             c_color);
 
         if (surface->surface_p == NULL) {
@@ -366,3 +378,68 @@ class Font:
             raise SdlError("img_load()")
 
         return surface
+
+class Music:
+    c"void *music_p;"
+
+    def __init__(self, path: string):
+        path_utf8 = path.to_utf8()
+        path_utf8 += 0
+        res = 0
+        message: string = None
+
+        c"""
+        this->music_p = Mix_LoadMUS((const char *)path_utf8.m_bytes->data());
+
+        if (this->music_p == NULL) {
+            message = String((char *)Mix_GetError());
+            res = 1;
+        }
+        """
+
+        if res != 0:
+            raise SdlError(message)
+
+    def play(self, loops: i64):
+        res = 0
+
+        c"""
+        res = Mix_PlayMusic((Mix_Music *)this->music_p, loops);
+        """
+
+        if res != 0:
+            raise SdlError("play music")
+
+class Wav:
+    c"void *wav_p;"
+
+    def __init__(self, path: string):
+        path_utf8 = path.to_utf8()
+        path_utf8 += 0
+        res = 0
+        message: string = None
+
+        c"""
+        this->wav_p = Mix_LoadWAV((const char *)path_utf8.m_bytes->data());
+
+        if (this->wav_p == NULL) {
+            message = String((char *)Mix_GetError());
+            res = 1;
+        }
+        """
+
+        if res != 0:
+            raise SdlError(message)
+
+    def play(self, channel: i64, loops: i64):
+        res = 0
+
+        c"""
+        res = Mix_PlayChannel(channel, (Mix_Chunk *)this->wav_p, loops);
+        """
+
+        if res == -1:
+            raise SdlError("play channel")
+
+def volume_music():
+    c"Mix_VolumeMusic(SDL_MIX_MAXVOLUME / 16);"

@@ -6,6 +6,11 @@ from sdl import create_window_and_renderer
 from sdl import create_rgb_surface
 from sdl import img_init
 from sdl import img_load
+from sdl import mix_init
+from sdl import open_audio
+from sdl import Music
+from sdl import Wav
+from sdl import volume_music
 from sdl import poll_event
 from sdl import get_performance_counter
 from sdl import get_performance_frequency
@@ -32,6 +37,10 @@ WIN_HEIGHT: i64 = BLOCK_SIZE * FIELD_HEIGHT
 MYS_LOGO_PATH: string = "images/mys-logo-30-25.png"
 FONT_PATH: string = "fonts/RobotoMono-Regular.ttf"
 FONT_SIZE: i64 = 16
+MUSIC_PATH: string = "sounds/TwintrisThosenine.mod"
+DROP_BLOCK_SOUND_PATH: string = "sounds/block.wav"
+CLEAR_SOUND_PATH: string = "sounds/clear.wav"
+AUDIO_BUFFER_SIZE: i64 = 1024
 
 BACKGROUND_COLOR: Color = Color(0, 0, 0, 0)
 FOREGROUND_COLOR: Color = Color(0, 170, 170, 0)
@@ -201,6 +210,9 @@ class Game:
     x_pos: i64
     y_pos: i64
     rotation_index: i64
+    music: Music
+    drop_block_sound: Wav
+    clear_sound: Wav
 
     def __init__(self, width: i64, height: i64, title: string):
         self.width = width
@@ -218,6 +230,7 @@ class Game:
                                          0x000000ff,
                                          0xff000000)
         self.texture = self.renderer.create_texture(width, height)
+        self.setup_sound()
         self.mys_logo = img_load(MYS_LOGO_PATH)
         self.mys_logo_texture = self.renderer.create_texture_from_surface(self.mys_logo)
         self.key_fire = KeyCode.L
@@ -227,6 +240,14 @@ class Game:
         self.x_offset = 1
         self.new_tetro()
         self.field = create_empty_field()
+
+    def setup_sound(self):
+        open_audio(48000, 2, AUDIO_BUFFER_SIZE)
+        volume_music()
+        self.music = Music(MUSIC_PATH)
+        self.music.play(1)
+        self.drop_block_sound = Wav(DROP_BLOCK_SOUND_PATH)
+        self.clear_sound = Wav(CLEAR_SOUND_PATH)
 
     def run(self):
         frame_timing = FrameTiming()
@@ -418,7 +439,9 @@ class Game:
                     # Drop it and generate a new one
                     self.drop_tetro()
                     self.new_tetro()
-                    self.delete_cleared_lines()
+
+                    if not self.delete_cleared_lines():
+                        self.drop_block_sound.play(0, 0)
 
                 return
 
@@ -444,16 +467,18 @@ class Game:
         value = self.screen.map_rgb(color.r, color.g, color.b)
         self.screen.fill_rect(rect, value)
 
-    def delete_cleared_lines(self):
+    def delete_cleared_lines(self) -> bool:
         number_of_cleared_lines = 0
 
         for y in range(2, FIELD_HEIGHT + 3):
             if self.delete_cleared_line(y):
                 number_of_cleared_lines += 1
 
-        if number_of_cleared_lines == 4:
-            print("BOOM!")
+        if number_of_cleared_lines > 0:
+            self.clear_sound.play(0, 0)
 
+        return number_of_cleared_lines > 0
+            
     def delete_cleared_line(self, y: i64) -> bool:
         for v in slice(self.field[y], 1, -1):
             if v == 0:
@@ -471,5 +496,6 @@ def main():
     sdl_init()
     ttf_init()
     img_init()
+    mix_init()
     game = Game(WIN_WIDTH, WIN_HEIGHT, TITLE)
     game.run()
