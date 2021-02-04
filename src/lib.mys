@@ -24,7 +24,7 @@ class SdlError(Error):
     message: string
 
 class Window:
-    c"void *window_p;"
+    c"SDL_Window *window_p;"
     title: bytes
 
     def __init__(self):
@@ -35,19 +35,19 @@ class Window:
         self.title += 0
 
         c"""
-        SDL_SetWindowTitle((SDL_Window *)this->window_p,
+        SDL_SetWindowTitle(this->window_p,
                            (const char *)this->title.m_bytes->data());
         """
 
 class Renderer:
-    c"void *renderer_p;"
+    c"SDL_Renderer *renderer_p;"
 
     def create_texture(self, width: i64, height: i64) -> Texture:
         texture = Texture()
         res = 0
 
         c"""
-        texture->texture_p = SDL_CreateTexture((SDL_Renderer *)this->renderer_p,
+        texture->texture_p = SDL_CreateTexture(this->renderer_p,
                                                SDL_PIXELFORMAT_ARGB8888,
                                                SDL_TEXTUREACCESS_STREAMING,
                                                width,
@@ -70,8 +70,8 @@ class Renderer:
 
         c"""
         texture->texture_p = SDL_CreateTextureFromSurface(
-            (SDL_Renderer *)this->renderer_p,
-            (SDL_Surface *)surface->surface_p);
+            this->renderer_p,
+            surface->surface_p);
 
         if (texture->texture_p == NULL) {
             res = 1;
@@ -84,7 +84,7 @@ class Renderer:
         return texture
 
     def clear(self):
-        c"SDL_RenderClear((SDL_Renderer *)this->renderer_p);"
+        c"SDL_RenderClear(this->renderer_p);"
 
     def copy(self, texture: Texture, dst_rect: Rect):
         c"""
@@ -98,25 +98,25 @@ class Renderer:
             dstrect.h = dst_rect->h;
             dstrect_p = &dstrect;
         }
-        SDL_RenderCopy((SDL_Renderer *)this->renderer_p,
-                       (SDL_Texture *)texture->texture_p,
+        SDL_RenderCopy(this->renderer_p,
+                       texture->texture_p,
                        NULL,
                        dstrect_p);
         """
 
     def present(self):
-        c"SDL_RenderPresent((SDL_Renderer *)this->renderer_p);"
+        c"SDL_RenderPresent(this->renderer_p);"
 
 class Surface:
-    c"void *surface_p;"
+    c"SDL_Surface *surface_p;"
 
     def __del__(self):
-        c"SDL_FreeSurface((SDL_Surface *)this->surface_p);"
+        c"SDL_FreeSurface(this->surface_p);"
 
     def map_rgb(self, r: u8, g: u8, b: u8) -> u32:
         res: u32 = 0
 
-        c"res = SDL_MapRGB(((SDL_Surface *)this->surface_p)->format, r, g, b);"
+        c"res = SDL_MapRGB(this->surface_p->format, r, g, b);"
 
         return res
 
@@ -127,14 +127,14 @@ class Surface:
         c_rect.y = rect->y;
         c_rect.w = rect->w;
         c_rect.h = rect->h;
-        SDL_FillRect((SDL_Surface *)this->surface_p, &c_rect, color);
+        SDL_FillRect(this->surface_p, &c_rect, color);
         """
 
 class Texture:
-    c"void *texture_p;"
+    c"SDL_Texture *texture_p;"
 
     def __del__(self):
-        c"SDL_DestroyTexture((SDL_Texture *)this->texture_p);"
+        c"SDL_DestroyTexture(this->texture_p);"
 
     def query(self) -> (i64, i64):
         width = 0
@@ -143,7 +143,7 @@ class Texture:
         c"""
         int w;
         int h;
-        SDL_QueryTexture((SDL_Texture *)this->texture_p, NULL, NULL, &w, &h);
+        SDL_QueryTexture(this->texture_p, NULL, NULL, &w, &h);
         width = w;
         height = h;
         """
@@ -152,11 +152,8 @@ class Texture:
 
     def update(self, surface: Surface):
         c"""
-        SDL_Surface *surface_p = (SDL_Surface *)surface->surface_p;
-        SDL_UpdateTexture((SDL_Texture *)this->texture_p,
-                           NULL,
-                           surface_p->pixels,
-                           surface_p->pitch);
+        SDL_Surface *surface_p = surface->surface_p;
+        SDL_UpdateTexture(this->texture_p, NULL, surface_p->pixels, surface_p->pitch);
         """
 
 def sdl_init():
