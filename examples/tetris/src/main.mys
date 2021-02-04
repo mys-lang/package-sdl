@@ -14,7 +14,6 @@ from sdl import volume_music
 from sdl import poll_event
 from sdl import get_performance_counter
 from sdl import get_performance_frequency
-from sdl import Event
 from sdl import QuitEvent
 from sdl import KeySym
 from sdl import KeyDownEvent

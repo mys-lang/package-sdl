@@ -1,5 +1,8 @@
-c"""source-before-namespace
+c"""header-before-namespace
 #include <SDL.h>
+"""
+
+c"""source-before-namespace
 #include <SDL_ttf.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
@@ -310,12 +313,12 @@ def poll_event() -> Event:
 
 @enum
 class KeyCode:
-    Space = 32
-    L = 108
-    Right = 1073741903
-    Left = 1073741904
-    Down = 1073741905
-    Up = 1073741906
+    Space = c"SDLK_SPACE"
+    L = c"SDLK_l"
+    Right = c"SDLK_RIGHT"
+    Left = c"SDLK_LEFT"
+    Down = c"SDLK_DOWN"
+    Up = c"SDLK_UP"
 
 def get_performance_counter() -> u64:
     count: u64 = 0
