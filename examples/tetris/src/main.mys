@@ -35,7 +35,7 @@ WIN_WIDTH: i64 = BLOCK_SIZE * FIELD_WIDTH * 3
 WIN_HEIGHT: i64 = BLOCK_SIZE * FIELD_HEIGHT
 MYS_LOGO_PATH: string = "images/mys-logo-30-25.png"
 FONT_PATH: string = "fonts/RobotoMono-Regular.ttf"
-FONT_SIZE: i64 = 16
+FONT_SIZE: i64 = 24
 MUSIC_PATH: string = "sounds/TwintrisThosenine.mod"
 DROP_BLOCK_SOUND_PATH: string = "sounds/block.wav"
 CLEAR_SOUND_PATH: string = "sounds/clear.wav"
@@ -52,7 +52,7 @@ TETRO_COLORS: [Color] = [
     Color(209, 0, 191, 0),
     Color(209, 0, 0, 0)
 ]
-TEXT_COLOR: Color = Color(202, 125, 95, 0)
+TEXT_COLOR: Color = Color(255, 255, 255, 0)
 
 @enum
 class State:
@@ -191,7 +191,6 @@ class Game:
     window: Window
     renderer: Renderer
     tetro_stats: [i64]
-    tetro_total: i64
     key_fire: KeyCode
     state: State
     nes_random: NesRandom
@@ -206,6 +205,7 @@ class Game:
     # X offset of the game display
     x_offset: i64
     tetro: Tetro
+    next_tetro_index: i64
     x_pos: i64
     y_pos: i64
     rotation_index: i64
@@ -216,7 +216,6 @@ class Game:
     def __init__(self, width: i64, height: i64, title: string):
         self.width = width
         self.height = height
-        self.tetro_total = 0
         self.tetro_stats = [0, 0, 0, 0, 0, 0, 0]
         self.window, self.renderer = create_window_and_renderer(width, height, 0)
         self.window.set_title(title)
@@ -236,7 +235,8 @@ class Game:
         self.state = State.Running
         self.nes_random = NesRandom()
         self.font = Font(FONT_PATH, FONT_SIZE)
-        self.x_offset = 1
+        self.x_offset = FIELD_WIDTH * BLOCK_SIZE + 1
+        self.next_tetro_index = self.nes_random.random()
         self.new_tetro()
         self.field = create_empty_field()
 
@@ -272,10 +272,12 @@ class Game:
         self.draw_tetro()
         self.draw_field()
         self.draw_vertial_splitters()
-        self.draw_stats_bars()
+        self.draw_stats_blocks()
+        self.draw_next_tetro()
         self.draw_middle()
         self.draw_logo()
         self.draw_stats_text()
+        self.draw_next_tetro_text()
         self.renderer.present()
 
     def draw_background(self):
@@ -285,7 +287,8 @@ class Game:
         for block in self.tetro.blocks[self.rotation_index]:
             self.draw_block(self.x_pos + block.x,
                             self.y_pos + block.y,
-                            self.tetro.color_index)
+                            self.tetro.color_index,
+                            self.x_offset)
 
     def draw_field(self):
         for y in range(3, FIELD_HEIGHT + 3):
@@ -293,53 +296,49 @@ class Game:
                 row = self.field[y]
 
                 if row[x] > 0:
-                    self.draw_block(x, y, row[x] - 1)
+                    self.draw_block(x, y, row[x] - 1, self.x_offset)
 
-    def draw_block(self, x: i64, y: i64, color_index: i64):
-        rect = Rect(self.x_offset + (x - 1) * BLOCK_SIZE,
+    def draw_block(self, x: i64, y: i64, color_index: i64, x_offset: i64):
+        rect = Rect(x_offset + (x - 1) * BLOCK_SIZE,
                     (y - 3) * BLOCK_SIZE,
                     BLOCK_SIZE - 1,
                     BLOCK_SIZE - 1)
         self.fill_rect(rect, TETRO_COLORS[color_index])
 
     def draw_vertial_splitters(self):
-        rect = Rect(BLOCK_SIZE * FIELD_WIDTH + 2, 0, 2, self.height)
+        rect = Rect(BLOCK_SIZE * FIELD_WIDTH - 2, 0, 2, self.height)
         self.fill_rect(rect, FOREGROUND_COLOR)
-        rect.x = WIN_WIDTH - BLOCK_SIZE * FIELD_WIDTH - 4
+        rect.x = WIN_WIDTH - BLOCK_SIZE * FIELD_WIDTH + 1
         self.fill_rect(rect, FOREGROUND_COLOR)
 
-    def draw_stats_bars(self):
+    def draw_stats_blocks(self):
         for i, stat in enumerate(self.tetro_stats):
-            height = 10
+            tetro = TETROS[i]
 
-            if self.tetro_total > 0:
-                height += 90 * stat / self.tetro_total
-
-            width = BLOCK_SIZE
-            height = height * 4 * width / 100
-            rect = Rect((WIN_WIDTH - 7 * (width + 1)) / 2 + i * (width + 1),
-                        WIN_HEIGHT * 3 / 4 - height,
-                        width,
-                        height)
-            self.fill_rect(rect, TETRO_COLORS[i])
+            for block in tetro.blocks[0]:
+                x = (block.x + 1) * BLOCK_SIZE
+                y = i * (5 * BLOCK_SIZE / 2) + (block.y + 1) * BLOCK_SIZE
+                rect = Rect(x, y, BLOCK_SIZE - 1, BLOCK_SIZE - 1)
+                self.fill_rect(rect, TETRO_COLORS[tetro.color_index])
 
     def draw_stats_text(self):
-        self.draw_text(WIN_WIDTH / 3 + 10,
-                       WIN_HEIGHT * 3 / 4,
-                       f"stats: {self.tetro_total} tetros",
-                       TEXT_COLOR)
-        stats = ""
+        self.draw_text(BLOCK_SIZE, 0, "STATISTICS", TEXT_COLOR)
 
-        for stat in self.tetro_stats:
-            if self.tetro_total > 0:
-                stat = 100 * stat / self.tetro_total
+        for i, stat in enumerate(self.tetro_stats):
+            y = (i + 1) * (5 * BLOCK_SIZE / 2) - FONT_SIZE / 2
+            self.draw_text(BLOCK_SIZE * 7, y, str(self.tetro_stats[i]), TEXT_COLOR)
 
-            stats += f" {stat}"
+    def draw_next_tetro(self):
+        tetro = TETROS[self.next_tetro_index]
 
-        self.draw_text(WIN_WIDTH / 3 - 8,
-                       WIN_HEIGHT * 3 / 4 + 2 * FONT_SIZE,
-                       stats,
-                       TEXT_COLOR)
+        for block in tetro.blocks[0]:
+            x = (block.x + 22) * BLOCK_SIZE
+            y = (5 * BLOCK_SIZE / 2) + (block.y + 6) * BLOCK_SIZE
+            rect = Rect(x, y, BLOCK_SIZE - 1, BLOCK_SIZE - 1)
+            self.fill_rect(rect, TETRO_COLORS[tetro.color_index])
+
+    def draw_next_tetro_text(self):
+        self.draw_text(BLOCK_SIZE * 23, BLOCK_SIZE * 7, "NEXT", TEXT_COLOR)
 
     def draw_middle(self):
         self.texture.update(self.screen)
@@ -348,7 +347,7 @@ class Game:
     def draw_logo(self):
         tw, th = self.mys_logo_texture.query()
         self.renderer.copy(self.mys_logo_texture,
-                           Rect((WIN_WIDTH - tw) / 2, 20, tw, th))
+                           Rect(5 * (WIN_WIDTH - tw / 2) / 6, 20, tw, th))
 
     def draw_text(self, x: i64, y: i64, text: string, color: Color):
         surface = self.font.render_solid(text, color)
@@ -433,7 +432,6 @@ class Game:
                 if self.y_pos < 3:
                     # The new tetro has no space to drop => end of the game
                     self.state = State.GameOver
-                    self.tetro_total = 0
                 else:
                     # Drop it and generate a new one
                     self.drop_tetro()
@@ -449,11 +447,10 @@ class Game:
     def new_tetro(self):
         self.x_pos = FIELD_WIDTH / 2 - TETRO_SIZE / 2
         self.y_pos = 2
-        tetro_index = self.nes_random.random()
-        self.tetro_total += 1
-        self.tetro_stats[tetro_index] += 1
-        self.tetro = TETROS[tetro_index]
+        self.tetro = TETROS[self.next_tetro_index]
         self.rotation_index = 0
+        self.tetro_stats[self.next_tetro_index] += 1
+        self.next_tetro_index = self.nes_random.random()
 
     def drop_tetro(self):
         for block in self.tetro.blocks[self.rotation_index]:
@@ -477,7 +474,7 @@ class Game:
             self.clear_sound.play(0, 0)
 
         return number_of_cleared_lines > 0
-            
+
     def delete_cleared_line(self, y: i64) -> bool:
         for v in slice(self.field[y], 1, -1):
             if v == 0:
