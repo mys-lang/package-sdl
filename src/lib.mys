@@ -312,6 +312,8 @@ def poll_event() -> Event:
 class KeyCode:
     Space = c"SDLK_SPACE"
     L = c"SDLK_l"
+    X = c"SDLK_x"
+    Z = c"SDLK_z"
     Right = c"SDLK_RIGHT"
     Left = c"SDLK_LEFT"
     Down = c"SDLK_DOWN"

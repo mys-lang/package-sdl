@@ -378,8 +378,10 @@ class Game:
         if self.state != State.Running:
             return
 
-        if key == KeyCode.Up:
-            self.rotate_tetro()
+        if key == KeyCode.Z:
+            self.rotate_tetro(-1)
+        elif key == KeyCode.X:
+            self.rotate_tetro(1)
         elif key == KeyCode.Left:
             self.move_tetro_left()
         elif key == KeyCode.Right:
@@ -393,9 +395,9 @@ class Game:
     def handle_key_fire(self):
         print("handle_key_fire")
 
-    def rotate_tetro(self):
+    def rotate_tetro(self, step: i64):
         rotation_index = self.rotation_index
-        self.rotation_index += 1
+        self.rotation_index += step
         self.rotation_index %= TETRO_SIZE
 
         if not self.move_tetro_side(0):
