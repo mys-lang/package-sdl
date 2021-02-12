@@ -1,6 +1,6 @@
 [package]
 name = "sdl"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Erik Moqvist <erik.moqvist@gmail.com>"]
 description = "An SDL2 wrapper."
 
