@@ -290,12 +290,16 @@ def poll_event() -> Event:
     switch (event.type) {
 
     case SDL_QUIT:
+    {
     """
 
     return QuitEvent()
 
     c"""
+    }
+
     case SDL_KEYDOWN:
+    {
         key_code = event.key.keysym.sym;
     """
 
@@ -304,7 +308,9 @@ def poll_event() -> Event:
     except ValueError:
         return None
 
-    c"}"
+    c"""
+    }
+    }"""
 
     return None
 
