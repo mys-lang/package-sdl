@@ -1,48 +1,63 @@
 from fiber import sleep
 from random.pseudo import randint
-from sdl import sdl_init
-from sdl import ttf_init
-from sdl import create_window_and_renderer
+from sdl import Color
+from sdl import Font
+from sdl import KeyCode
+from sdl import KeyDownEvent
+from sdl import KeySym
+from sdl import Music
+from sdl import QuitEvent
+from sdl import Rect
+from sdl import Renderer
+from sdl import Surface
+from sdl import Texture
+from sdl import Wav
+from sdl import Window
 from sdl import create_rgb_surface
+from sdl import create_window_and_renderer
+from sdl import get_performance_counter
+from sdl import get_performance_frequency
 from sdl import img_init
 from sdl import img_load
 from sdl import mix_init
 from sdl import open_audio
-from sdl import Music
-from sdl import Wav
-from sdl import volume_music
 from sdl import poll_event
-from sdl import get_performance_counter
-from sdl import get_performance_frequency
-from sdl import QuitEvent
-from sdl import KeySym
-from sdl import KeyDownEvent
-from sdl import KeyCode
-from sdl import Window
-from sdl import Renderer
-from sdl import Surface
-from sdl import Texture
-from sdl import Rect
-from sdl import Color
-from sdl import Font
+from sdl import sdl_init
+from sdl import ttf_init
+from sdl import volume_music
 
 TITLE: string = "Mystris"
+
 BLOCK_SIZE: i64 = 20
+
 TETRO_SIZE: i64 = 4
+
 FIELD_HEIGHT: i64 = 20
+
 FIELD_WIDTH: i64 = 10
+
 WIN_WIDTH: i64 = BLOCK_SIZE * FIELD_WIDTH * 3
+
 WIN_HEIGHT: i64 = BLOCK_SIZE * FIELD_HEIGHT
+
 MYS_LOGO_PATH: string = "images/mys-logo-30-25.png"
+
 FONT_PATH: string = "fonts/RobotoMono-Regular.ttf"
+
 FONT_SIZE: i64 = 24
+
 MUSIC_PATH: string = "sounds/TwintrisThosenine.mod"
+
 DROP_BLOCK_SOUND_PATH: string = "sounds/block.wav"
+
 CLEAR_SOUND_PATH: string = "sounds/clear.wav"
+
 AUDIO_BUFFER_SIZE: i64 = 1024
 
 BACKGROUND_COLOR: Color = Color(0, 0, 0, 0)
+
 FOREGROUND_COLOR: Color = Color(0, 170, 170, 0)
+
 TETRO_COLORS: [Color] = [
     Color(0, 98, 192, 0),
     Color(202, 125, 95, 0),
@@ -52,6 +67,7 @@ TETRO_COLORS: [Color] = [
     Color(209, 0, 191, 0),
     Color(209, 0, 0, 0)
 ]
+
 TEXT_COLOR: Color = Color(255, 255, 255, 0)
 
 @enum
