@@ -1,11 +1,11 @@
 [package]
 name = "sdl"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Erik Moqvist <erik.moqvist@gmail.com>"]
 description = "An SDL2 wrapper."
 
 [c-dependencies]
-sdl2 = "*"
-SDL2_image = "*"
-SDL2_mixer = "*"
-SDL2_ttf = "*"
+sdl2 = "latest"
+SDL2_image = "latest"
+SDL2_mixer = "latest"
+SDL2_ttf = "latest"

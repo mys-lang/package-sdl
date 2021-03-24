@@ -6,4 +6,4 @@ description = "A tetris clone."
 
 [dependencies]
 sdl = { path = "../.." }
-random = "*"
+random = "latest"
