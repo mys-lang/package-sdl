@@ -40,17 +40,17 @@ WIN_WIDTH: i64 = BLOCK_SIZE * FIELD_WIDTH * 3
 
 WIN_HEIGHT: i64 = BLOCK_SIZE * FIELD_HEIGHT
 
-MYS_LOGO_PATH: string = "images/mys-logo-30-25.png"
+MYS_LOGO_PATH: string = f"{__assets__}/images/mys-logo-30-25.png"
 
-FONT_PATH: string = "fonts/RobotoMono-Regular.ttf"
+FONT_PATH: string = f"{__assets__}/fonts/RobotoMono-Regular.ttf"
 
 FONT_SIZE: i64 = 24
 
-MUSIC_PATH: string = "sounds/TwintrisThosenine.mod"
+MUSIC_PATH: string = f"{__assets__}/sounds/TwintrisThosenine.mod"
 
-DROP_BLOCK_SOUND_PATH: string = "sounds/block.wav"
+DROP_BLOCK_SOUND_PATH: string = f"{__assets__}/sounds/block.wav"
 
-CLEAR_SOUND_PATH: string = "sounds/clear.wav"
+CLEAR_SOUND_PATH: string = f"{__assets__}/sounds/clear.wav"
 
 AUDIO_BUFFER_SIZE: i64 = 1024
 
