@@ -22,7 +22,6 @@ jobs:
     - name: Test
       run: |
         mys test
-        (cd examples/tetris && mys build)
 
   release:
     needs: [linux]
