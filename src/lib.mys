@@ -27,10 +27,10 @@ class Window:
     c"SDL_Window *window_p;"
     title: bytes
 
-    def __init__(self):
+    func __init__(self):
         pass
 
-    def set_title(self, title: string):
+    func set_title(self, title: string):
         self.title = title.to_utf8()
         self.title += 0
 
@@ -42,7 +42,7 @@ class Window:
 class Renderer:
     c"SDL_Renderer *renderer_p;"
 
-    def create_texture(self, width: i64, height: i64) -> Texture:
+    func create_texture(self, width: i64, height: i64) -> Texture:
         texture = Texture()
         res = 0
 
@@ -64,7 +64,7 @@ class Renderer:
         return texture
 
     # ToDo: missing return value does not work.
-    def create_texture_from_surface(self, surface: Surface) -> Texture:
+    func create_texture_from_surface(self, surface: Surface) -> Texture:
         texture = Texture()
         res = 0
 
@@ -83,10 +83,10 @@ class Renderer:
 
         return texture
 
-    def clear(self):
+    func clear(self):
         c"SDL_RenderClear(this->renderer_p);"
 
-    def copy(self, texture: Texture, dst_rect: Rect):
+    func copy(self, texture: Texture, dst_rect: Rect):
         c"""
         SDL_Rect dstrect;
         SDL_Rect *dstrect_p = NULL;
@@ -104,23 +104,23 @@ class Renderer:
                        dstrect_p);
         """
 
-    def present(self):
+    func present(self):
         c"SDL_RenderPresent(this->renderer_p);"
 
 class Surface:
     c"SDL_Surface *surface_p;"
 
-    def __del__(self):
+    func __del__(self):
         c"SDL_FreeSurface(this->surface_p);"
 
-    def map_rgb(self, r: u8, g: u8, b: u8) -> u32:
+    func map_rgb(self, r: u8, g: u8, b: u8) -> u32:
         res: u32 = 0
 
         c"res = SDL_MapRGB(this->surface_p->format, r, g, b);"
 
         return res
 
-    def fill_rect(self, rect: Rect, color: u32):
+    func fill_rect(self, rect: Rect, color: u32):
         c"""
         SDL_Rect c_rect;
         c_rect.x = rect->x;
@@ -133,10 +133,10 @@ class Surface:
 class Texture:
     c"SDL_Texture *texture_p;"
 
-    def __del__(self):
+    func __del__(self):
         c"SDL_DestroyTexture(this->texture_p);"
 
-    def query(self) -> (i64, i64):
+    func query(self) -> (i64, i64):
         width = 0
         height = 0
 
@@ -150,13 +150,13 @@ class Texture:
 
         return (width, height)
 
-    def update(self, surface: Surface):
+    func update(self, surface: Surface):
         c"""
         SDL_Surface *surface_p = surface->surface_p;
         SDL_UpdateTexture(this->texture_p, NULL, surface_p->pixels, surface_p->pitch);
         """
 
-def sdl_init():
+func sdl_init():
     res = 0
 
     c"res = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);"
@@ -164,13 +164,13 @@ def sdl_init():
     if res != 0:
         raise SdlError("sdl_init()")
 
-def ttf_init():
+func ttf_init():
     c"TTF_Init();"
 
-def mix_init():
+func mix_init():
     c"Mix_Init(0);"
 
-def open_audio(frequency: i64, channels: i64, chunksize: i64):
+func open_audio(frequency: i64, channels: i64, chunksize: i64):
     res = 0
 
     c"Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, channels, chunksize);"
@@ -178,7 +178,7 @@ def open_audio(frequency: i64, channels: i64, chunksize: i64):
     if res != 0:
         raise SdlError("Mix_OpenAudio()")
 
-def create_window_and_renderer(width: i64,
+func create_window_and_renderer(width: i64,
                                height: i64,
                                flags: u32) -> (Window, Renderer):
     window = Window()
@@ -198,7 +198,7 @@ def create_window_and_renderer(width: i64,
 
     return window, renderer
 
-def create_rgb_surface(flags: u32,
+func create_rgb_surface(flags: u32,
                        width: i64,
                        height: i64,
                        bpp: i64,
@@ -229,7 +229,7 @@ def create_rgb_surface(flags: u32,
 
     return surface
 
-def img_init():
+func img_init():
     res = 0
 
     c"""
@@ -241,7 +241,7 @@ def img_init():
     if res != 0:
         raise SdlError("img_init()")
 
-def img_load(path: string) -> Surface:
+func img_load(path: string) -> Surface:
     surface = Surface()
     res = 0
     path_utf8 = path.to_utf8()
@@ -273,7 +273,7 @@ class KeyDownEvent(Event):
 class KeySym:
     sym: KeyCode
 
-def poll_event() -> Event:
+func poll_event() -> Event:
     res = 0
     key_code = 0
 
@@ -325,14 +325,14 @@ class KeyCode:
     Down = c"SDLK_DOWN"
     Up = c"SDLK_UP"
 
-def get_performance_counter() -> u64:
+func get_performance_counter() -> u64:
     count: u64 = 0
 
     c"count = SDL_GetPerformanceCounter();"
 
     return count
 
-def get_performance_frequency() -> u64:
+func get_performance_frequency() -> u64:
     frequency: u64 = 0
 
     c"frequency = SDL_GetPerformanceFrequency();"
@@ -342,7 +342,7 @@ def get_performance_frequency() -> u64:
 class Font:
     c"void *font_p;"
 
-    def __init__(self, path: string, size: i64):
+    func __init__(self, path: string, size: i64):
         res = 0
         path_utf8 = path.to_utf8()
         path_utf8 += 0
@@ -358,7 +358,7 @@ class Font:
         if res != 0:
             raise SdlError("Font()")
 
-    def render_solid(self, text: string, color: Color) -> Surface:
+    func render_solid(self, text: string, color: Color) -> Surface:
         text_utf8 = text.to_utf8()
         text_utf8 += 0
         surface = Surface()
@@ -390,7 +390,7 @@ class Font:
 class Music:
     c"void *music_p;"
 
-    def __init__(self, path: string):
+    func __init__(self, path: string):
         path_utf8 = path.to_utf8()
         path_utf8 += 0
         res = 0
@@ -408,7 +408,7 @@ class Music:
         if res != 0:
             raise SdlError(message)
 
-    def play(self, loops: i64):
+    func play(self, loops: i64):
         res = 0
 
         c"""
@@ -421,7 +421,7 @@ class Music:
 class Wav:
     c"void *wav_p;"
 
-    def __init__(self, path: string):
+    func __init__(self, path: string):
         path_utf8 = path.to_utf8()
         path_utf8 += 0
         res = 0
@@ -439,7 +439,7 @@ class Wav:
         if res != 0:
             raise SdlError(message)
 
-    def play(self, channel: i64, loops: i64):
+    func play(self, channel: i64, loops: i64):
         res = 0
 
         c"""
@@ -449,5 +449,5 @@ class Wav:
         if res == -1:
             raise SdlError("play channel")
 
-def volume_music():
+func volume_music():
     c"Mix_VolumeMusic(SDL_MIX_MAXVOLUME / 16);"
