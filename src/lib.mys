@@ -260,8 +260,7 @@ func img_load(path: string) -> Surface:
 
     return surface
 
-@trait
-class Event:
+trait Event:
     pass
 
 class QuitEvent(Event):
