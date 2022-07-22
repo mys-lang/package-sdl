@@ -86,7 +86,7 @@ class Renderer:
     func clear(self):
         c"SDL_RenderClear(this->renderer_p);"
 
-    func copy(self, texture: Texture, dst_rect: Rect):
+    func copy(self, texture: Texture, dst_rect: Rect?):
         c"""
         SDL_Rect dstrect;
         SDL_Rect *dstrect_p = NULL;
@@ -272,7 +272,7 @@ class KeyDownEvent(Event):
 class KeySym:
     sym: KeyCode
 
-func poll_event() -> Event:
+func poll_event() -> Event?:
     res = 0
     key_code = 0
 
@@ -392,7 +392,7 @@ class Music:
         path_utf8 = path.to_utf8()
         path_utf8 += 0
         res = 0
-        message: string = None
+        message: string? = None
 
         c"""
         this->music_p = Mix_LoadMUS((const char *)path_utf8.m_bytes->data());
@@ -423,7 +423,7 @@ class Wav:
         path_utf8 = path.to_utf8()
         path_utf8 += 0
         res = 0
-        message: string = None
+        message: string? = None
 
         c"""
         this->wav_p = Mix_LoadWAV((const char *)path_utf8.m_bytes->data());
