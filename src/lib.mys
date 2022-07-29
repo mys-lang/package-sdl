@@ -1,3 +1,5 @@
+from os.path import Path
+
 c"""header-before-namespace
 #include <SDL.h>
 """
@@ -241,10 +243,10 @@ func img_init():
     if res != 0:
         raise SdlError("img_init()")
 
-func img_load(path: string) -> Surface:
+func img_load(path: Path) -> Surface:
     surface = Surface()
     res = 0
-    path_utf8 = path.to_utf8()
+    path_utf8 = path.to_string().to_utf8()
     path_utf8 += 0
 
     c"""
@@ -340,9 +342,9 @@ func get_performance_frequency() -> u64:
 class Font:
     c"void *font_p;"
 
-    func __init__(self, path: string, size: i64):
+    func __init__(self, path: Path, size: i64):
         res = 0
-        path_utf8 = path.to_utf8()
+        path_utf8 = path.to_string().to_utf8()
         path_utf8 += 0
 
         c"""
@@ -388,8 +390,8 @@ class Font:
 class Music:
     c"void *music_p;"
 
-    func __init__(self, path: string):
-        path_utf8 = path.to_utf8()
+    func __init__(self, path: Path):
+        path_utf8 = path.to_string().to_utf8()
         path_utf8 += 0
         res = 0
         message: string? = None
@@ -419,8 +421,8 @@ class Music:
 class Wav:
     c"void *wav_p;"
 
-    func __init__(self, path: string):
-        path_utf8 = path.to_utf8()
+    func __init__(self, path: Path):
+        path_utf8 = path.to_string().to_utf8()
         path_utf8 += 0
         res = 0
         message: string? = None
